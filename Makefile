@@ -60,6 +60,21 @@ scripts/nvim-typecheck-action:
 scripts/benchmark.nvim:
 	git clone https://github.com/stevearc/benchmark.nvim scripts/benchmark.nvim
 
+# Tag v2.15.0 -> 2.15.0; 8 commits past it -> 2.15.0+8.g0587d41; uncommitted changes to tracked files add .dirty.
+# No tag -> 0.0.0+g<hash>. Not a git checkout -> 0.0.0.
+## version: print the version string derived from git
+.PHONY: version
+version:
+	@if d=$$(git describe --tags --long --match 'v[0-9]*' 2>/dev/null); then \
+		v=$${d%-*-g*}; v=$${v#v}; n=$${d%-g*}; n=$${n##*-}; \
+		if [ "$$n" -gt 0 ]; then meta="$$n.g$${d##*-g}"; fi; \
+	else \
+		v=0.0.0; h=$$(git rev-parse --short HEAD 2>/dev/null) && meta="g$$h"; \
+	fi; \
+	if [ -n "$$(git status --porcelain --untracked-files=no 2>/dev/null)" ]; then meta="$${meta:+$$meta.}dirty"; fi; \
+	if [ -n "$$meta" ]; then v="$$v+$$meta"; fi; \
+	echo "$$v"
+
 ## clean: reset the repository to a clean state
 .PHONY: clean
 clean:
